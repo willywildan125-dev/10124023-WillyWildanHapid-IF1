@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Form Penjualan</title>
+</head>
+<body>
+    <h1 id="app_title">Form Penjualan</h1>
+    <p>
+        <a href="#" onclick="setLang('id')"><b>[ID]</b></a>
+        <a href="#" onclick="setLang('en')">[EN]</a>
+        | <span id="lbl_user">Pengguna:</span> <b id="username_display">-</b>
+        | <a href="../PHP/logout.php" id="link_logout">Keluar</a>
+    </p>
+    <hr>
+
+    <p id="msg_box" style="display:none;"><b style="color:green;" id="msg_text"></b></p>
+
+    <h3 id="lbl_dashboard">Dashboard</h3>
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <td><b id="lbl_total_items">Total Barang:</b> <span id="val_items">0</span></td>
+            <td><b id="lbl_total_stock">Total Stok:</b> <span id="val_stock">0</span></td>
+            <td><b id="lbl_total_value">Total Nilai:</b> Rp <span id="val_value">0</span></td>
+        </tr>
+    </table>
+
+    <br>
+    <h3 id="lbl_management">Data Barang</h3>
+
+    <input type="text" id="search_input" placeholder="Cari...">
+    <button onclick="loadData()" id="btn_search">Cari</button>
+    <br><br>
+
+    <a href="create.html"><b id="link_add">[+ Tambah Barang]</b></a>
+    <br><br>
+
+    <table border="1" cellpadding="8" cellspacing="0" id="data_table">
+        <thead>
+            <tr>
+                <th id="th_no">No</th>
+                <th id="th_name">Nama Barang</th>
+                <th id="th_desc">Deskripsi</th>
+                <th id="th_price">Harga</th>
+                <th id="th_stock">Stok</th>
+                <th id="th_action">Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="data_body">
+            <tr><td colspan="6" align="center" id="no_data">Memuat data...</td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        var texts = {
+            id: {
+                app_title: "Form Penjualan", lbl_user: "Pengguna:", link_logout: "Keluar",
+                lbl_dashboard: "Dashboard", lbl_total_items: "Total Barang:", lbl_total_stock: "Total Stok:",
+                lbl_total_value: "Total Nilai:", lbl_management: "Data Barang",
+                search_ph: "Cari...", btn_search: "Cari", link_add: "[+ Tambah Barang]",
+                th_no: "No", th_name: "Nama Barang", th_desc: "Deskripsi", th_price: "Harga",
+                th_stock: "Stok", th_action: "Aksi", btn_edit: "Ubah", btn_delete: "Hapus",
+                no_data: "Tidak ada data.", loading: "Memuat data...",
+                confirm_delete: "Yakin ingin menghapus data ini?",
+                added: "Data berhasil ditambahkan!", edited: "Data berhasil diubah!", deleted: "Data berhasil dihapus!"
+            },
+            en: {
+                app_title: "Form Penjualan", lbl_user: "User:", link_logout: "Logout",
+                lbl_dashboard: "Dashboard", lbl_total_items: "Total Items:", lbl_total_stock: "Total Stock:",
+                lbl_total_value: "Total Value:", lbl_management: "Items",
+                search_ph: "Search...", btn_search: "Search", link_add: "[+ Add Item]",
+                th_no: "No", th_name: "Item Name", th_desc: "Description", th_price: "Price",
+                th_stock: "Stock", th_action: "Action", btn_edit: "Edit", btn_delete: "Delete",
+                no_data: "No data found.", loading: "Loading data...",
+                confirm_delete: "Are you sure you want to delete this item?",
+                added: "Data added successfully!", edited: "Data updated successfully!", deleted: "Data deleted successfully!"
+            }
+        };
+
+        function getLang() { return localStorage.getItem('lang') || 'id'; }
+        function t(key) { return texts[getLang()][key] || key; }
+        function setLang(lang) { localStorage.setItem('lang', lang); applyLang(); loadData(); }
+
+        function formatNumber(n) {
+            return Number(n).toLocaleString('id-ID');
+        }
+
+        function applyLang() {
+            var lang = getLang();
+            var t = texts[lang];
+            document.getElementById('app_title').textContent = t.app_title;
+            document.getElementById('lbl_user').textContent = t.lbl_user;
+            document.getElementById('link_logout').textContent = t.link_logout;
+            document.getElementById('lbl_dashboard').textContent = t.lbl_dashboard;
+            document.getElementById('lbl_total_items').textContent = t.lbl_total_items;
+            document.getElementById('lbl_total_stock').textContent = t.lbl_total_stock;
+            document.getElementById('lbl_total_value').textContent = t.lbl_total_value;
+            document.getElementById('lbl_management').textContent = t.lbl_management;
+            document.getElementById('search_input').placeholder = t.search_ph;
+            document.getElementById('btn_search').textContent = t.btn_search;
+            document.getElementById('link_add').textContent = t.link_add;
+            document.getElementById('th_no').textContent = t.th_no;
+            document.getElementById('th_name').textContent = t.th_name;
+            document.getElementById('th_desc').textContent = t.th_desc;
+            document.getElementById('th_price').textContent = t.th_price;
+            document.getElementById('th_stock').textContent = t.th_stock;
+            document.getElementById('th_action').textContent = t.th_action;
+
+            var params = new URLSearchParams(window.location.search);
+            var msg = params.get('msg');
+            if (msg && t[msg]) {
+                document.getElementById('msg_box').style.display = '';
+                document.getElementById('msg_text').textContent = t[msg];
+            }
+        }
+
+        function deleteItem(id) {
+            if (!confirm(t('confirm_delete'))) return;
+            fetch('../PHP/api.php?action=delete&id=' + id)
+                .then(function(r) { return r.json(); })
+                .then(function() { loadData(); });
+        }
+
+        function loadData() {
+            var search = document.getElementById('search_input').value;
+            var url = '../PHP/api.php?action=list';
+            if (search) url += '&search=' + encodeURIComponent(search);
+
+            fetch(url)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.error === 'not_logged_in') {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    document.getElementById('username_display').textContent = data.username;
+                    document.getElementById('val_items').textContent = formatNumber(data.totalItems);
+                    document.getElementById('val_stock').textContent = formatNumber(data.totalStock);
+                    document.getElementById('val_value').textContent = formatNumber(data.totalValue);
+
+                    var tbody = document.getElementById('data_body');
+                    if (data.items.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" align="center">' + t('no_data') + '</td></tr>';
+                        return;
+                    }
+
+                    var html = '';
+                    for (var i = 0; i < data.items.length; i++) {
+                        var item = data.items[i];
+                        html += '<tr>';
+                        html += '<td>' + (i + 1) + '</td>';
+                        html += '<td>' + item.nama + '</td>';
+                        html += '<td>' + (item.deskripsi || '-') + '</td>';
+                        html += '<td>Rp ' + formatNumber(item.harga) + '</td>';
+                        html += '<td>' + formatNumber(item.stok) + '</td>';
+                        html += '<td><a href="edit.html?id=' + item.id + '">' + t('btn_edit') + '</a> | ';
+                        html += '<a href="#" onclick="deleteItem(' + item.id + '); return false;">' + t('btn_delete') + '</a></td>';
+                        html += '</tr>';
+                    }
+                    tbody.innerHTML = html;
+                });
+        }
+
+        applyLang();
+        loadData();
+    </script>
+</body>
+</html>

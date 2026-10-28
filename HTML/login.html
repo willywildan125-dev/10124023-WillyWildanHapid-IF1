@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk - Form Penjualan</title>
+</head>
+<body>
+    <p align="right">
+        <a href="#" onclick="setLang('id')"><b>[ID]</b></a>
+        <a href="#" onclick="setLang('en')">[EN]</a>
+    </p>
+
+    <h2 id="title">Masuk ke Akun</h2>
+    <hr>
+
+    <p id="msg_error" style="display:none;"><b style="color:red;" id="msg_error_text"></b></p>
+    <p id="msg_success" style="display:none;"><b style="color:green;" id="msg_success_text"></b></p>
+
+    <form method="POST" action="../PHP/login.php">
+        <p>
+            <label><b id="lbl_user">Nama Pengguna:</b></label><br>
+            <input type="text" name="username" required>
+        </p>
+        <p>
+            <label><b id="lbl_pass">Kata Sandi:</b></label><br>
+            <input type="password" name="password" required>
+        </p>
+        <p>
+            <button type="submit" id="btn_submit">Masuk</button>
+        </p>
+    </form>
+
+    <p><span id="no_acc">Belum punya akun?</span> <a href="register.html" id="link_reg">Daftar</a></p>
+
+    <script>
+        var texts = {
+            id: {
+                title: "Masuk ke Akun", lbl_user: "Nama Pengguna:", lbl_pass: "Kata Sandi:",
+                btn_submit: "Masuk", no_acc: "Belum punya akun?", link_reg: "Daftar",
+                field_required: "Semua kolom wajib diisi!", login_failed: "Username atau password salah!",
+                registered: "Registrasi berhasil! Silakan login."
+            },
+            en: {
+                title: "Login to Account", lbl_user: "Username:", lbl_pass: "Password:",
+                btn_submit: "Login", no_acc: "Don't have an account?", link_reg: "Register",
+                field_required: "All fields are required!", login_failed: "Invalid username or password!",
+                registered: "Registration successful! Please login."
+            }
+        };
+
+        function setLang(lang) { localStorage.setItem('lang', lang); applyLang(); }
+
+        function applyLang() {
+            var lang = localStorage.getItem('lang') || 'id';
+            var t = texts[lang];
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('lbl_user').textContent = t.lbl_user;
+            document.getElementById('lbl_pass').textContent = t.lbl_pass;
+            document.getElementById('btn_submit').textContent = t.btn_submit;
+            document.getElementById('no_acc').textContent = t.no_acc;
+            document.getElementById('link_reg').textContent = t.link_reg;
+
+            var params = new URLSearchParams(window.location.search);
+            var err = params.get('error');
+            var suc = params.get('success');
+            if (err && t[err]) {
+                document.getElementById('msg_error').style.display = '';
+                document.getElementById('msg_error_text').textContent = t[err];
+            }
+            if (suc && t[suc]) {
+                document.getElementById('msg_success').style.display = '';
+                document.getElementById('msg_success_text').textContent = t[suc];
+            }
+        }
+        applyLang();
+    </script>
+</body>
+</html>

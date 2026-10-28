@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - Form Penjualan</title>
+</head>
+<body>
+    <p align="right">
+        <a href="#" onclick="setLang('id')"><b>[ID]</b></a>
+        <a href="#" onclick="setLang('en')">[EN]</a>
+    </p>
+
+    <h2 id="title">Buat Akun Baru</h2>
+    <hr>
+
+    <p id="msg_error" style="display:none;"><b style="color:red;" id="msg_error_text"></b></p>
+
+    <form method="POST" action="../PHP/register.php">
+        <p>
+            <label><b id="lbl_user">Nama Pengguna:</b></label><br>
+            <input type="text" name="username" required>
+        </p>
+        <p>
+            <label><b id="lbl_email">Email:</b></label><br>
+            <input type="email" name="email" required>
+        </p>
+        <p>
+            <label><b id="lbl_pass">Kata Sandi:</b></label><br>
+            <input type="password" name="password" required>
+        </p>
+        <p>
+            <label><b id="lbl_confirm">Konfirmasi Kata Sandi:</b></label><br>
+            <input type="password" name="confirm_password" required>
+        </p>
+        <p>
+            <button type="submit" id="btn_submit">Daftar</button>
+        </p>
+    </form>
+
+    <p><span id="has_acc">Sudah punya akun?</span> <a href="login.html" id="link_login">Masuk</a></p>
+
+    <script>
+        var texts = {
+            id: {
+                title: "Buat Akun Baru", lbl_user: "Nama Pengguna:", lbl_email: "Email:",
+                lbl_pass: "Kata Sandi:", lbl_confirm: "Konfirmasi Kata Sandi:",
+                btn_submit: "Daftar", has_acc: "Sudah punya akun?", link_login: "Masuk",
+                field_required: "Semua kolom wajib diisi!", invalid_email: "Format email tidak valid!",
+                password_mismatch: "Konfirmasi kata sandi tidak cocok!",
+                username_exists: "Nama pengguna sudah digunakan!", email_exists: "Email sudah terdaftar!",
+                register_failed: "Registrasi gagal!"
+            },
+            en: {
+                title: "Create New Account", lbl_user: "Username:", lbl_email: "Email:",
+                lbl_pass: "Password:", lbl_confirm: "Confirm Password:",
+                btn_submit: "Register", has_acc: "Already have an account?", link_login: "Login",
+                field_required: "All fields are required!", invalid_email: "Invalid email format!",
+                password_mismatch: "Password confirmation does not match!",
+                username_exists: "Username is already taken!", email_exists: "Email is already registered!",
+                register_failed: "Registration failed!"
+            }
+        };
+
+        function setLang(lang) { localStorage.setItem('lang', lang); applyLang(); }
+
+        function applyLang() {
+            var lang = localStorage.getItem('lang') || 'id';
+            var t = texts[lang];
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('lbl_user').textContent = t.lbl_user;
+            document.getElementById('lbl_email').textContent = t.lbl_email;
+            document.getElementById('lbl_pass').textContent = t.lbl_pass;
+            document.getElementById('lbl_confirm').textContent = t.lbl_confirm;
+            document.getElementById('btn_submit').textContent = t.btn_submit;
+            document.getElementById('has_acc').textContent = t.has_acc;
+            document.getElementById('link_login').textContent = t.link_login;
+
+            var params = new URLSearchParams(window.location.search);
+            var err = params.get('error');
+            if (err && t[err]) {
+                document.getElementById('msg_error').style.display = '';
+                document.getElementById('msg_error_text').textContent = t[err];
+            }
+        }
+        applyLang();
+    </script>
+</body>
+</html>

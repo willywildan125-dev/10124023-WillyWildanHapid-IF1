@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ubah Barang - Form Penjualan</title>
+</head>
+<body>
+    <h1 id="app_title">Form Penjualan</h1>
+    <p>
+        <a href="#" onclick="setLang('id')"><b>[ID]</b></a>
+        <a href="#" onclick="setLang('en')">[EN]</a>
+    </p>
+    <hr>
+
+    <h2 id="title">Ubah Barang</h2>
+
+    <p id="msg_error" style="display:none;"><b style="color:red;" id="msg_error_text"></b></p>
+
+    <form method="POST" action="../PHP/edit.php">
+        <input type="hidden" name="id" id="item_id">
+        <p>
+            <label><b id="lbl_name">Nama Barang:</b></label><br>
+            <input type="text" name="nama" id="input_nama" required>
+        </p>
+        <p>
+            <label><b id="lbl_desc">Deskripsi:</b></label><br>
+            <textarea name="deskripsi" id="input_deskripsi" rows="4" cols="40"></textarea>
+        </p>
+        <p>
+            <label><b id="lbl_price">Harga (Rp):</b></label><br>
+            <input type="number" name="harga" id="input_harga" step="0.01" min="0" required>
+        </p>
+        <p>
+            <label><b id="lbl_stock">Stok:</b></label><br>
+            <input type="number" name="stok" id="input_stok" min="0" required>
+        </p>
+        <p>
+            <button type="submit" id="btn_save">Simpan</button>
+            <a href="index.html" id="link_back">Kembali</a>
+        </p>
+    </form>
+
+    <script>
+        var texts = {
+            id: { app_title: "Form Penjualan", title: "Ubah Barang", lbl_name: "Nama Barang:", lbl_desc: "Deskripsi:", lbl_price: "Harga (Rp):", lbl_stock: "Stok:", btn_save: "Simpan", link_back: "Kembali", field_required: "Semua kolom wajib diisi!", failed: "Gagal mengubah data!" },
+            en: { app_title: "Form Penjualan", title: "Edit Item", lbl_name: "Item Name:", lbl_desc: "Description:", lbl_price: "Price (Rp):", lbl_stock: "Stock:", btn_save: "Save", link_back: "Back", field_required: "All fields are required!", failed: "Failed to update data!" }
+        };
+        function setLang(lang) { localStorage.setItem('lang', lang); applyLang(); }
+        function applyLang() {
+            var lang = localStorage.getItem('lang') || 'id'; var t = texts[lang];
+            document.getElementById('app_title').textContent = t.app_title;
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('lbl_name').textContent = t.lbl_name;
+            document.getElementById('lbl_desc').textContent = t.lbl_desc;
+            document.getElementById('lbl_price').textContent = t.lbl_price;
+            document.getElementById('lbl_stock').textContent = t.lbl_stock;
+            document.getElementById('btn_save').textContent = t.btn_save;
+            document.getElementById('link_back').textContent = t.link_back;
+            var params = new URLSearchParams(window.location.search);
+            var err = params.get('error');
+            if (err && t[err]) { document.getElementById('msg_error').style.display = ''; document.getElementById('msg_error_text').textContent = t[err]; }
+        }
+
+        // Load item data dari API
+        var params = new URLSearchParams(window.location.search);
+        var itemId = params.get('id');
+        if (itemId) {
+            document.getElementById('item_id').value = itemId;
+            fetch('../PHP/api.php?action=get&id=' + itemId)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.error === 'not_logged_in') { window.location.href = 'login.html'; return; }
+                    if (data.error === 'not_found') { window.location.href = 'index.html'; return; }
+                    document.getElementById('input_nama').value = data.nama;
+                    document.getElementById('input_deskripsi').value = data.deskripsi || '';
+                    document.getElementById('input_harga').value = data.harga;
+                    document.getElementById('input_stok').value = data.stok;
+                });
+        }
+
+        applyLang();
+    </script>
+</body>
+</html>
